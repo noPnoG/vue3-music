@@ -1,19 +1,20 @@
 <template>
-    <div class="singer-detail">singer-detail</div>
+  <div class="singer-detail">singer-detail</div>
 </template>
 
 <script>
 import { getSingerDetail } from '@/service/singer'
 export default {
-  name: 'singer-detail',
   props: {
     singer: {
-      type: Object
-
+      type: Object,
+      default: () => {
+        return {}
+      }
     }
   },
   async created () {
-    console.log(this.singer.mid)
+    console.log(this.singer)
     const singer = await getSingerDetail(this.singer)
     console.log(singer)
   }

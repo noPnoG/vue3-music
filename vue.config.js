@@ -1,6 +1,10 @@
 const registerRouter = require('./backend/router')
 
 module.exports = {
+  publicPath: process.env.NODE_ENV === 'production'
+    ? '/vue3-music/'
+    : '/',
+  productionSourceMap: false,
   css: {
     loaderOptions: {
       sass: {

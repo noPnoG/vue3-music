@@ -24,17 +24,10 @@ const routes = [
   {
     path: '/singer',
     component: Singer,
-    children: [
-      {
-        path: ':id',
-        component: SingerDetail
-      }
-    ]
-  },
-  {
-    path: '/detail',
-    component: SingerDetail
-
+    children: [{
+      path: ':id',
+      component: SingerDetail
+    }]
   }
 
 ]

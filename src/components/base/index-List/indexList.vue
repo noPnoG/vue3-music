@@ -52,6 +52,7 @@ export default {
 
     return { onClickItem, groupRef, onScroll, fixedTitle, currentIndex, fixedStyle, shortcutList, onShortcutTouchStart, onShortcutTouchMove, scrollRef }
   }
+
 }
 </script>
 <style lang="scss" scoped>
