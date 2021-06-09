@@ -10,6 +10,7 @@
         {{tab.name}}
       </span>
     </router-link>
+
   </div>
 </template>
 
