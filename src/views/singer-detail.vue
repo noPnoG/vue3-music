@@ -1,22 +1,63 @@
 <template>
-  <div class="singer-detail">singer-detail</div>
+  <div class="singer-detail">
+    <music-list :songs="songs" :title="title" :pic="pic" :loading="loading"></music-list>
+  </div>
 </template>
 
 <script>
 import { getSingerDetail } from '@/service/singer'
+import { processSongs } from '@/service/song'
+import MusicList from '@/components/music-list/music-list'
+import storage from 'good-storage'
+import { SINGER_KEY } from '@/assets/js/constant'
 export default {
+  components: {
+    MusicList
+  },
   props: {
     singer: {
-      type: Object,
-      default: () => {
-        return {}
+      type: Object
+    }
+  },
+  computed: {
+    pic () {
+      const singer = this.computedSinger
+      return singer && singer.pic
+    },
+    title () {
+      const singer = this.computedSinger
+      return singer && singer.name
+    },
+    computedSinger () {
+      let ret = null
+      const singer = this.singer
+      if (singer) {
+        ret = singer
+      } else {
+        const cachedSinger = storage.session.get(SINGER_KEY)
+        console.log(cachedSinger)
+        if (cachedSinger && cachedSinger.mid === this.$route.params.id) {
+          ret = cachedSinger
+        }
       }
+      return ret
+    }
+  },
+  data () {
+    return {
+      songs: [],
+      loading: true
     }
   },
   async created () {
-    console.log(this.singer)
-    const singer = await getSingerDetail(this.singer)
-    console.log(singer)
+    if (!this.computedSinger) {
+      const path = this.$route.matched[0].path
+      this.$router.push({ path })
+    }
+    const res = await getSingerDetail(this.computedSinger)
+    const songs = await processSongs(res.songs)
+    this.songs = songs
+    this.loading = false
   }
 }
 </script>

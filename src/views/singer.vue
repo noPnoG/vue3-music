@@ -15,6 +15,8 @@
 <script>
 import { getSingerList } from '@/service/singer'
 import IndexList from '@/components/base/index-List/indexList.vue'
+import storage from 'good-storage'
+import { SINGER_KEY } from '@/assets/js/constant'
 export default {
   components: {
     IndexList
@@ -23,7 +25,7 @@ export default {
     return {
       singers: [],
       Component: {},
-      selectedSinger: {}
+      selectedSinger: null
     }
   },
   async created () {
@@ -31,9 +33,13 @@ export default {
     this.singers = data.singers
   },
   methods: {
-    selectSinger (item) {
-      this.selectedSinger = item
-      this.$router.push({ path: `/singer/${item.id}` })
+    selectSinger (singer) {
+      this.selectedSinger = singer
+      this.cacheSinger(singer)
+      this.$router.push({ path: `/singer/${singer.mid}` })
+    },
+    cacheSinger (singer) {
+      storage.session.set(SINGER_KEY, singer)
     }
   }
 

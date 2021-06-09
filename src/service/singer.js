@@ -5,7 +5,6 @@ export function getSingerList () {
 }
 
 export function getSingerDetail (singer) {
-  console.log(singer.mid)
   return get('/api/getSingerDetail', {
     mid: singer.mid
   })
