@@ -34,7 +34,8 @@
     :style="scrollStyle"
     v-loading="loading"
     :probe-type="3"
-    @scroll="onScroll">
+    @scroll="onScroll"
+    v-no-result:[noResultText]="noResult">
       <div class="song-list-wrapper">
         <song-list
           :songs="songs"
@@ -123,6 +124,9 @@ export default {
       return {
         backdropFilter: `blur(${blur}px)`
       }
+    },
+    noResult () {
+      return !this.loading && !this.songs.length
     }
 
   },

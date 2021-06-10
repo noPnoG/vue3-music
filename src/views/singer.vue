@@ -4,11 +4,11 @@
       :data="singers"
       @select="selectSinger"
     ></index-list>
-    <router-view :singer="selectedSinger">
+    <router-view v-slot="{Component}">
+      <transition appear name="slide">
+        <component :is="Component" :siner="selectedSinger"/>
+      </transition>
     </router-view>
-     <!--  <transition appear name="slide">
-        <component :is="Component" :data="selectedSinger"/>
-      </transition> -->
   </div>
 </template>
 
@@ -24,7 +24,6 @@ export default {
   data () {
     return {
       singers: [],
-      Component: {},
       selectedSinger: null
     }
   },
