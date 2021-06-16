@@ -10,7 +10,6 @@ export function processSongs (songs) {
     })
   }).then((res) => {
     const map = res.map
-    console.log(map)
     return songs.map((song) => {
       song.url = map[song.mid]
       return song

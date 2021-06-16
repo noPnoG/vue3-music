@@ -50,6 +50,7 @@
 <script>
 import SongList from '@/components/song-list/song-list'
 import Scroll from '@/components/base/scroll/scroll'
+import { mapActions } from 'vuex'
 const RESERVED_HEIGHT = 40
 
 export default {
@@ -142,6 +143,7 @@ export default {
     this.maxTranslateY = this.imageHeight - RESERVED_HEIGHT
   },
   methods: {
+    ...mapActions(['selectPlay', 'randomPlay']),
     goBack () {
       this.$router.back()
     },
@@ -154,6 +156,7 @@ export default {
         index
       })
     },
+
     random () {
       this.randomPlay(this.songs)
     }

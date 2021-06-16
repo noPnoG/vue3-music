@@ -23,7 +23,6 @@ export default {
   emits: ['scroll'],
   setup (porps, { emit }) {
     const rootRef = ref(null)
-    console.log(porps.probeType)
     const scroll = useScroll(rootRef, porps, emit)
 
     return {
