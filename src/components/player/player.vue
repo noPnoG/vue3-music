@@ -14,7 +14,7 @@
       <div class="bottom">
         <div class="operators">
           <div class="icon i-left">
-            <i class="icon-sequence"></i>
+            <i @click="changeMode" :class="modeIcon"></i>
           </div>
           <div class="icon i-left" :class="disableCls">
             <i @click="prev" class="icon-prev"></i>
@@ -26,7 +26,7 @@
             <i @click="next" class="icon-next"></i>
           </div>
           <div class="icon i-right">
-            <i class="icon-not-favorite"></i>
+            <i @click="toggleFavorite(currentSong)" :class="getFavoriteIcon(currentSong)"></i>
           </div>
         </div>
       </div>
@@ -38,23 +38,32 @@
 <script>
 import { computed, ref, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
-
+import useMode from './use-mode'
+import useFavorite from './use-favorite'
 export default {
   setup () {
+    // data
     const store = useStore()
     const audioRef = ref(null)
     const songReady = ref(false)
+    // hook
+    const { modeIcon, changeMode } = useMode()
+    const { getFavoriteIcon, toggleFavorite } = useFavorite()
+    // vuex
     const fullScreen = computed(() => store.state.fullScreen)
     const currentSong = computed(() => store.getters.currentSong)
     const playing = computed(() => store.state.playing)
     const playList = computed(() => store.state.playList)
     const currentIndex = computed(() => store.state.currentIndex)
+    // computed
+
     const playIcon = computed(() => {
       return playing.value ? 'icon-pause' : 'icon-play'
     })
     const disableCls = computed(() => {
       return songReady.value ? '' : 'disable'
     })
+    // watch
     watch(currentSong, newSong => {
       if (!newSong.id || !newSong.url) {
         return
@@ -72,7 +81,7 @@ export default {
       const audioEl = audioRef.value
       newPlaying ? audioEl.play() : audioEl.pause()
     })
-
+    // methods
     function togglePlay () {
       if (!songReady.value) {
         return
@@ -145,13 +154,17 @@ export default {
       audioRef,
       goback,
       playIcon,
+      modeIcon,
       togglePlay,
       pause,
       next,
       prev,
       ready,
       disableCls,
-      error
+      error,
+      changeMode,
+      getFavoriteIcon,
+      toggleFavorite
     }
   }
 }
