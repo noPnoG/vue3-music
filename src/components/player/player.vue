@@ -11,7 +11,30 @@
         <h1 class="title">{{ currentSong.name }}</h1>
         <h1 class="subtitle">{{ currentSong.singer }}</h1>
       </div>
+      <div class="middle">
+        <div class="middle-l">
+          <div ref="cdWrapperRef" class="cd-wrapper">
+            <div ref="cdRef" class="cd">
+              <img ref="cdImageRef" class="image" :class="cdCls"    :src="currentSong.pic" />
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="bottom">
+        <div class="progress-wrapper">
+          <span class="time time-l">{{ formatTime(currentTime) }}</span>
+          <div class="progress-bar-wrapper">
+            <progress-bar
+              ref="barRef"
+              :progress="progress"
+              @progress-changing="onProgressChanging"
+              @progress-changed="onProgressChanged"
+            ></progress-bar>
+          </div>
+          <span class="time time-r">{{
+            formatTime(currentSong.duration)
+          }}</span>
+        </div>
         <div class="operators">
           <div class="icon i-left">
             <i @click="changeMode" :class="modeIcon"></i>
@@ -26,30 +49,51 @@
             <i @click="next" class="icon-next"></i>
           </div>
           <div class="icon i-right">
-            <i @click="toggleFavorite(currentSong)" :class="getFavoriteIcon(currentSong)"></i>
+            <i
+              @click="toggleFavorite(currentSong)"
+              :class="getFavoriteIcon(currentSong)"
+            ></i>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <audio ref="audioRef" @pause="pause" @canplay="ready" @error="error"></audio>
+  <audio
+    ref="audioRef"
+    @timeupdate="updateTime"
+    @pause="pause"
+    @canplay="ready"
+    @error="error"
+    @ended="end"
+  ></audio>
 </template>
 
 <script>
+import { PLAY_MODE } from '@/assets/js/constant'
+import ProgressBar from './progress-bar.vue'
 import { computed, ref, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
 import useMode from './use-mode'
+import useCd from './use-cd'
 import useFavorite from './use-favorite'
+import { formatTime } from '@/assets/js/util'
 export default {
+  components: {
+    ProgressBar
+  },
   setup () {
     // data
     const store = useStore()
     const audioRef = ref(null)
     const songReady = ref(false)
+    const currentTime = ref(0)
+    let progressChanging = false
     // hook
     const { modeIcon, changeMode } = useMode()
     const { getFavoriteIcon, toggleFavorite } = useFavorite()
+    const { cdCls, cdRef, cdImageRef } = useCd()
     // vuex
+    const playMode = computed(() => store.state.playMode)
     const fullScreen = computed(() => store.state.fullScreen)
     const currentSong = computed(() => store.getters.currentSong)
     const playing = computed(() => store.state.playing)
@@ -63,12 +107,17 @@ export default {
     const disableCls = computed(() => {
       return songReady.value ? '' : 'disable'
     })
+
+    const progress = computed(() => {
+      return currentTime.value / currentSong.value.duration
+    })
     // watch
     watch(currentSong, newSong => {
       if (!newSong.id || !newSong.url) {
         return
       }
       songReady.value = false
+      currentTime.value = 0
       const audioEl = audioRef.value
       audioEl.src = newSong.url
       audioEl.play()
@@ -135,8 +184,9 @@ export default {
 
     function loop () {
       const audioEl = audioRef.value
-      audioEl.currenTime = 0
+      audioEl.currentTime = 0
       audioEl.play()
+      store.commit('setPlayingState', true)
     }
 
     function ready () {
@@ -148,7 +198,35 @@ export default {
     function error () {
       songReady.value = true
     }
+    function end () {
+      currentTime.value = 0
+      console.log(playMode.value)
+      if (playMode.value === PLAY_MODE.loop) {
+        loop()
+      } else {
+        next()
+      }
+    }
+    function updateTime (e) {
+      if (!progressChanging) {
+        currentTime.value = e.target.currentTime
+      }
+    }
+    function onProgressChanging (progress) {
+      progressChanging = true
+      currentTime.value = currentSong.value.duration * progress
+    }
+    function onProgressChanged (progress) {
+      progressChanging = false
+      audioRef.value.currentTime = currentTime.value =
+        currentSong.value.duration * progress
+      if (!playing.value) {
+        store.commit('setPlayingState', true)
+      }
+    }
     return {
+      currentTime,
+      progress,
       fullScreen,
       currentSong,
       audioRef,
@@ -160,11 +238,21 @@ export default {
       next,
       prev,
       ready,
+      end,
       disableCls,
       error,
       changeMode,
       getFavoriteIcon,
-      toggleFavorite
+      toggleFavorite,
+      updateTime,
+      formatTime,
+      onProgressChanging,
+      onProgressChanged,
+      // cd
+      cdRef,
+      cdImageRef,
+      cdCls
+
     }
   }
 }
@@ -227,6 +315,87 @@ export default {
       color: $color-text;
     }
   }
+  .middle {
+    position: fixed;
+    width: 100%;
+    top: 80px;
+    bottom: 170px;
+    white-space: nowrap;
+    font-size: 0;
+    .middle-l {
+      display: inline-block;
+      vertical-align: top;
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-top: 80%;
+      .cd-wrapper {
+        position: absolute;
+        left: 10%;
+        top: 0;
+        width: 80%;
+        box-sizing: border-box;
+        height: 100%;
+        .cd {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          img {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            border-radius: 50%;
+            border: 10px solid rgba(255, 255, 255, 0.1);
+          }
+          .playing {
+            animation: rotate 20s linear infinite;
+          }
+        }
+      }
+      .playing-lyric-wrapper {
+        width: 80%;
+        margin: 30px auto 0 auto;
+        overflow: hidden;
+        text-align: center;
+        .playing-lyric {
+          height: 20px;
+          line-height: 20px;
+          font-size: $font-size-medium;
+          color: $color-text-l;
+        }
+      }
+    }
+    .middle-r {
+      display: inline-block;
+      vertical-align: top;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      .lyric-wrapper {
+        width: 80%;
+        margin: 0 auto;
+        overflow: hidden;
+        text-align: center;
+        .text {
+          line-height: 32px;
+          color: $color-text-l;
+          font-size: $font-size-medium;
+          &.current {
+            color: $color-text;
+          }
+        }
+        .pure-music {
+          padding-top: 50%;
+          line-height: 32px;
+          color: $color-text-l;
+          font-size: $font-size-medium;
+        }
+      }
+    }
+  }
   .bottom {
     position: absolute;
     bottom: 50px;
@@ -247,6 +416,29 @@ export default {
           border-radius: 5px;
           background: $color-text-ll;
         }
+      }
+    }
+    .progress-wrapper {
+      display: flex;
+      align-items: center;
+      width: 80%;
+      margin: 0px auto;
+      padding: 10px 0;
+      .time {
+        color: $color-text;
+        font-size: $font-size-small;
+        flex: 0 0 40px;
+        line-height: 30px;
+        width: 40px;
+        &.time-l {
+          text-align: left;
+        }
+        &.time-r {
+          text-align: right;
+        }
+      }
+      .progress-bar-wrapper {
+        flex: 1;
       }
     }
     .progress-wrapper {
