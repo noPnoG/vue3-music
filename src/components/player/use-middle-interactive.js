@@ -50,7 +50,6 @@ export default function useMiddleInteractive () {
     middleRStyle.value = {
       transform: `translate3D(${offsetWidth}px,0,0)`
     }
-    console.log(middleRStyle.value)
   }
   function onMiddleTouchEnd () {
     let offsetWidth
