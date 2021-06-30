@@ -1,5 +1,5 @@
 <template>
-  <div class="player">
+  <div class="player" v-show="playList.length">
     <div class="normal-player" v-show="fullScreen">
       <div class="background">
         <img :src="currentSong.pic" />
@@ -91,6 +91,7 @@
       </div>
     </div>
   </div>
+  <mini-player :toggle-play="togglePlay" :progress="progress"></mini-player>
   <audio
     ref="audioRef"
     @timeupdate="updateTime"
@@ -104,7 +105,7 @@
 <script>
 import { PLAY_MODE } from '@/assets/js/constant'
 import ProgressBar from './progress-bar.vue'
-import { computed, ref, watch } from '@vue/runtime-core'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import useMode from './use-mode'
 import useLyric from './use-lyric'
@@ -113,10 +114,12 @@ import useCd from './use-cd'
 import useMiddleInteractive from './use-middle-interactive'
 import useFavorite from './use-favorite'
 import { formatTime } from '@/assets/js/util'
+import MiniPlayer from './mini-player.vue'
 export default {
   components: {
     ProgressBar,
-    Scroll
+    Scroll,
+    MiniPlayer
   },
   setup () {
     // data
@@ -124,6 +127,7 @@ export default {
     const audioRef = ref(null)
     const songReady = ref(false)
     const currentTime = ref(0)
+    const barRef = ref(null)
     let progressChanging = false
 
     // hook
@@ -190,6 +194,13 @@ export default {
       } else {
         audioEl.pause()
         stopLyric()
+      }
+    })
+    watch(fullScreen, (newFullScreen) => {
+      if (newFullScreen) {
+        nextTick(() => {
+          barRef.value.setOffset(progress.value)
+        })
       }
     })
     // methods
@@ -294,9 +305,11 @@ export default {
       // ref
       lyricScrollRef,
       lyricListRef,
+      barRef,
       currentTime,
       progress,
       fullScreen,
+      playList,
       currentSong,
       audioRef,
       goback,
