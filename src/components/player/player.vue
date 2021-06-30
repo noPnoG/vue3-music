@@ -1,6 +1,6 @@
 <template>
   <div class="player" v-show="playList.length">
-    <transition name="normal">
+    <transition name="normal" @enter="enter" @after-enter="afterEnter" @leave="leave" @after-leave="afterLeave">
       <div class="normal-player" v-show="fullScreen">
         <div class="background">
           <img :src="currentSong.pic" />
@@ -115,6 +115,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import useMode from './use-mode'
 import useLyric from './use-lyric'
+import useAnimation from './use-animation'
 import Scroll from '@/components/base/scroll/scroll'
 import useCd from './use-cd'
 import useMiddleInteractive from './use-middle-interactive'
@@ -158,6 +159,10 @@ export default {
       onMiddleTouchMove,
       onMiddleTouchEnd
     } = useMiddleInteractive()
+    const {
+      enter, afterEnter, cdWrapperRef, leave,
+      afterLeave
+    } = useAnimation()
     // vuex
     const playMode = computed(() => store.state.playMode)
     const fullScreen = computed(() => store.state.fullScreen)
@@ -352,7 +357,13 @@ export default {
       middleRStyle,
       onMiddleTouchStart,
       onMiddleTouchMove,
-      onMiddleTouchEnd
+      onMiddleTouchEnd,
+      // animation
+      enter,
+      afterEnter,
+      cdWrapperRef,
+      leave,
+      afterLeave
     }
   }
 }
@@ -596,10 +607,10 @@ export default {
     }
     &.normal-enter-active,
     &.normal-leave-active {
-      transition: all 0.6s;
+      transition: all .6s;
       .top,
       .bottom {
-        transition: all 0.6s cubic-bezier(0.45, 0, 0.55, 1);
+        transition: all .6s cubic-bezier(0.45, 0, 0.55, 1);
       }
     }
     &.normal-enter-from,
