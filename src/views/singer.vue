@@ -6,7 +6,7 @@
     ></index-list>
     <router-view v-slot="{Component}">
       <transition appear name="slide">
-        <component :is="Component" :siner="selectedSinger"/>
+        <component :is="Component" :data="selectedSinger"/>
       </transition>
     </router-view>
   </div>
