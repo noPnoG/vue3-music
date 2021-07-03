@@ -56,3 +56,10 @@ export function removeSong ({ state, commit }, song) {
     commit('setPlayingState', false)
   }
 }
+
+export function clearPlayList ({ commit }) {
+  commit('setPlayList', [])
+  commit('setSequenceList', [])
+  commit('setCurrentIndex', 0)
+  commit('setPlayingState', false)
+}
