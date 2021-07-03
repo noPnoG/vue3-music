@@ -24,12 +24,13 @@ export default {
     const scrollRef = ref(null)
     const store = useStore()
     const scroll = computed(() => {
-      return scrollRef.value && scrollRef.value.scroll
+      return scrollRef.value.scroll
     })
     const playList = computed(() => store.state.playList)
     watch(playList, async () => {
+      console.log('refresh')
       await nextTick()
-      scrollRef.value.scroll.refresh()
+      scroll.value.refresh()
     })
     return {
       scrollRef,
