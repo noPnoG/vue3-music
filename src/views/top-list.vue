@@ -32,7 +32,7 @@
         <component :is="Component" :data="selectedTop"/>
       </transition>
     </router-view>
-  </div>
+      </div>
 </template>
 
 <script>

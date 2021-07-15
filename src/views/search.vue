@@ -1,27 +1,120 @@
 <template>
-  <div>
-    <search-input v-model="query"  placeholder="搜索"></search-input>
-    {{query}}
+  <div class="search">
+    <div class="search-input-wrapper">
+      <search-input v-model="query"> </search-input>
+    </div>
+    <scroll>
+      <div class="search-content" v-show="!query">
+        <div class="hot-keys">
+          <h1 class="title">热门搜索</h1>
+          <ul>
+            <li
+              class="item"
+              v-for="item in hotKeys"
+              :key="item.id"
+              @click="addQuery(item.key)"
+            >
+              <span>{{ item.key }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="search-result" v-show="query">
+        <suggest :query="query"></suggest>
+      </div>
+    </scroll>
   </div>
 </template>
 
 <script>
+import Scroll from '@/components/base/scroll/scroll'
 import SearchInput from '@/components/search/search-input'
+import Suggest from '@/components/search/suggest'
+import { watch, ref } from 'vue'
+import { getHotKeys } from '@/service/search'
 export default {
   components: {
-    SearchInput
+    SearchInput,
+    Suggest,
+    Scroll
   },
-  data () {
-    return { query: '' }
-  },
-  methods: {
-    onInput (value) {
-      console.log('update:query', this.query)
+  setup () {
+    const query = ref('')
+    const hotKeys = ref([])
+    getHotKeys().then((res) => {
+      hotKeys.value = res.hotKeys
+    })
+    function addQuery (key) {
+      query.value = key
+    }
+    watch('query', (val) => {
+      console.log(val)
+    })
+    return {
+      query,
+      hotKeys,
+      addQuery
     }
   }
 }
 </script>
 
-<style>
-
+<style lang="scss" scoped>
+.search {
+  position: fixed;
+  width: 100%;
+  top: 88px;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  .search-input-wrapper {
+    margin: 20px;
+  }
+  .search-content {
+    flex: 1;
+    overflow: hidden;
+    .hot-keys {
+      margin: 0 20px 20px 20px;
+      .title {
+        margin-bottom: 20px;
+        font-size: $font-size-medium;
+        color: $color-text-l;
+      }
+      .item {
+        display: inline-block;
+        padding: 5px 10px;
+        margin: 0 20px 10px 0;
+        border-radius: 6px;
+        background: $color-highlight-background;
+        font-size: $font-size-medium;
+        color: $color-text-d;
+      }
+    }
+    .search-history {
+      position: relative;
+      margin: 0 20px;
+      .title {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        font-size: $font-size-medium;
+        color: $color-text-l;
+        .text {
+          flex: 1;
+        }
+        .clear {
+          @include extend-click();
+          .icon-clear {
+            font-size: $font-size-medium;
+            color: $color-text-d;
+          }
+        }
+      }
+    }
+  }
+  .search-result {
+    flex: 1;
+    overflow: hidden;
+  }
+}
 </style>
