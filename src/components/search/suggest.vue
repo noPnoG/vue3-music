@@ -1,16 +1,19 @@
 <template>
-  <div ref="rootRef" class="suggest">
-    <!-- v-loading:[loadingText]="loading"
-    v-no-result:[noResultText]="noResult" -->
+  <div
+    ref="rootRef"
+    class="suggest"
+    v-loading:[loadingText]="loading"
+    v-no-result:[noResultText]="noResult"
+  >
     <ul class="suggest-list">
-      <!-- <li class="suggest-item" v-if="singer" @click="selectSinger(singer)">
+      <li class="suggest-item" v-if="singer" @click="selectSinger(singer)">
         <div class="icon">
           <i class="icon-mine"></i>
         </div>
         <div class="name">
           <p class="text">{{ singer.name }}</p>
         </div>
-      </li> -->
+      </li>
       <li
         class="suggest-item"
         v-for="song in songs"
@@ -31,7 +34,8 @@
 
 <script>
 import { search } from '@/service/search'
-import { ref, watch } from 'vue'
+import { processSongs } from '@/service/song'
+import { computed, ref, watch } from 'vue'
 export default {
   props: {
     query: String,
@@ -43,21 +47,48 @@ export default {
   setup (props) {
     const songs = ref([])
     const hasMore = ref(false)
+    const singer = ref(null)
+    const page = ref(1)
+    const loadingText = ref(null)
+    const noResultText = ref('为空')
+    const loading = computed(() => {
+      return !songs.value && songs.value.length === 0
+    })
+    const noResult = computed(() => {
+      return !singer.value && !songs.value.length && !hasMore.value
+    })
     watch(
       () => props.query,
-      (val) => {
-        if (val) {
-          search(val).then((res) => {
-            songs.value = res.songs
-            hasMore.value = res.hasMore
-          })
+      async (val) => {
+        if (!val) {
+          return
         }
+        await searchFirst()
       }
     )
-
+    async function searchFirst () {
+      if (!props.query) {
+        return
+      }
+      page.value = 1
+      songs.value = []
+      singer.value = null
+      hasMore.value = true
+      const res = await search(props.query, page.value, props.showSinger).catch((err) => {
+        console.log(err)
+      })
+      songs.value = await processSongs(res.songs)
+      hasMore.value = res.hasMore
+      singer.value = res.singer
+    }
     return {
       songs,
-      hasMore
+      hasMore,
+      loading,
+      loadingText,
+      singer,
+      noResult,
+      noResultText
     }
   }
 }
