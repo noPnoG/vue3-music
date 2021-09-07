@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { addClass, removeClass } from '@/assets/js/dom.js'
 
-const relativeCls = '.g-relative'
+const relativeCls = 'g-relative'
 export default function createLoadingLikeDirective (Comp) {
   return {
     mounted (el, binding) {

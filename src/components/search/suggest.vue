@@ -1,15 +1,13 @@
 <template>
   <div
-    ref="rootRef"
     class="suggest"
+    ref="rootRef"
     v-loading:[loadingText]="loading"
     v-no-result:[noResultText]="noResult"
   >
     <ul class="suggest-list">
       <li class="suggest-item" v-if="singer" @click="selectSinger(singer)">
-        <div class="icon">
-          <i class="icon-mine"></i>
-        </div>
+        <div class="icon"><i class="icon-mine"></i></div>
         <div class="name">
           <p class="text">{{ singer.name }}</p>
         </div>
@@ -20,22 +18,20 @@
         :key="song.id"
         @click="selectSong(song)"
       >
-        <div class="icon">
-          <i class="icon-music"></i>
-        </div>
+        <div class="icon"><i class="icon-music"></i></div>
         <div class="name">
           <p class="text">{{ song.singer }}-{{ song.name }}</p>
         </div>
       </li>
-      <!-- <div class="suggest-item" v-loading:[loadingText]="pullUpLoading"></div> -->
+      <div class="suggest-item" v-loading:[loadingText]="pullUpLoading"></div>
     </ul>
   </div>
 </template>
-
 <script>
 import { search } from '@/service/search'
 import { processSongs } from '@/service/song'
 import { computed, ref, watch } from 'vue'
+import usePullUpLoad from './use-pull-up-load.js'
 export default {
   props: {
     query: String,
@@ -51,12 +47,17 @@ export default {
     const page = ref(1)
     const loadingText = ref(null)
     const noResultText = ref('为空')
+    const { rootRef, isPullUpLoad } = usePullUpLoad(searchMore)
     const loading = computed(() => {
-      return !songs.value && songs.value.length === 0
+      return !singer.value && songs.value.length === 0
+    })
+    const pullUpLoading = computed(() => {
+      return isPullUpLoad.value && hasMore.value
     })
     const noResult = computed(() => {
       return !singer.value && !songs.value.length && !hasMore.value
     })
+
     watch(
       () => props.query,
       async (val) => {
@@ -74,14 +75,25 @@ export default {
       songs.value = []
       singer.value = null
       hasMore.value = true
-      const res = await search(props.query, page.value, props.showSinger).catch((err) => {
-        console.log(err)
-      })
+
+      const res = await search(props.query, page.value, props.showSinger)
       songs.value = await processSongs(res.songs)
       hasMore.value = res.hasMore
       singer.value = res.singer
     }
+    async function searchMore () {
+      if (!hasMore.value || !props.query) {
+        return
+      }
+      page.value++
+      console.log(pullUpLoading.value)
+      const res = await search(props.query, page.value, props.showSinger)
+      songs.value = songs.value.concat(await processSongs(res.songs))
+      hasMore.value = res.hasMore
+    }
     return {
+      rootRef,
+      pullUpLoading,
       songs,
       hasMore,
       loading,
