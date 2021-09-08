@@ -30,7 +30,7 @@
 <script>
 import { search } from '@/service/search'
 import { processSongs } from '@/service/song'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import usePullUpLoad from './use-pull-up-load.js'
 export default {
   props: {
@@ -40,14 +40,16 @@ export default {
       default: true
     }
   },
-  setup (props) {
+  emits: ['select-song', 'select-singer'],
+  setup (props, { emit }) {
     const songs = ref([])
     const hasMore = ref(false)
     const singer = ref(null)
     const page = ref(1)
     const loadingText = ref(null)
     const noResultText = ref('为空')
-    const { rootRef, isPullUpLoad } = usePullUpLoad(searchMore)
+    const manulLoading = ref(false)
+
     const loading = computed(() => {
       return !singer.value && songs.value.length === 0
     })
@@ -57,7 +59,10 @@ export default {
     const noResult = computed(() => {
       return !singer.value && !songs.value.length && !hasMore.value
     })
-
+    const preventPullUpLoad = computed(() => {
+      return manulLoading.value && loading.value
+    })
+    const { rootRef, isPullUpLoad, scroll } = usePullUpLoad(searchMore, preventPullUpLoad)
     watch(
       () => props.query,
       async (val) => {
@@ -75,11 +80,14 @@ export default {
       songs.value = []
       singer.value = null
       hasMore.value = true
-
+      isPullUpLoad.value = false
+      manulLoading.value = false
       const res = await search(props.query, page.value, props.showSinger)
       songs.value = await processSongs(res.songs)
       hasMore.value = res.hasMore
       singer.value = res.singer
+      await nextTick()
+      await makeItScrollable()
     }
     async function searchMore () {
       if (!hasMore.value || !props.query) {
@@ -90,8 +98,28 @@ export default {
       const res = await search(props.query, page.value, props.showSinger)
       songs.value = songs.value.concat(await processSongs(res.songs))
       hasMore.value = res.hasMore
+      await nextTick()
+      await makeItScrollable()
+    }
+    async function makeItScrollable () {
+      console.log(scroll.value.maxScrollY)
+      if (scroll.value.maxScrollY < -1) {
+        return
+      }
+      manulLoading.value = true
+      await searchMore()
+      manulLoading.value = false
+    }
+    function selectSong (song) {
+      emit('select-song', song)
+    }
+
+    function selectSinger (singer) {
+      emit('select-singer', singer)
     }
     return {
+      selectSong,
+      selectSinger,
       rootRef,
       pullUpLoading,
       songs,

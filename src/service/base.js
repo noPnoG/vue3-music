@@ -1,18 +1,19 @@
 import axios from 'axios'
 
 const ERR_OK = 0
-const baseUrl = '/'
+const baseURL = process.env.NODE_ENV === 'production' ? 'http://ustbhuangyi.com/music-next/' : '/'
 
-axios.defaults.baseUrl = baseUrl
+axios.defaults.baseURL = baseURL
+
 export function get (url, params) {
   return axios.get(url, {
     params
   }).then((res) => {
-    const serviceData = res.data
-    if (serviceData.code === ERR_OK) {
-      return serviceData.result
+    const serverData = res.data
+    if (serverData.code === ERR_OK) {
+      return serverData.result
     }
-  }).catch((err) => {
-    console.log(err)
+  }).catch((e) => {
+    console.log(e)
   })
 }
