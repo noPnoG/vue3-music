@@ -4,8 +4,6 @@
     <input
       v-model="query"
       class="input-inner"
-      @input="onInput"
-      @change="onchange"
       :placeholder="placeholder"
     />
     <i v-show="query" class="icon-dismiss" @click="clear"></i>
