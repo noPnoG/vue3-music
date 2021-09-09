@@ -58,6 +58,7 @@
 </template>
 <script>
 import Scroll from '@/components/base/scroll/scroll'
+import AddSong from '@/components/add-song/add-song'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import useMode from './use-mode'
@@ -67,7 +68,8 @@ export default {
   name: 'play-list',
   components: {
     Scroll,
-    Confirm
+    Confirm,
+    AddSong
   },
   setup () {
     const visible = ref(false)
@@ -76,6 +78,7 @@ export default {
     const confirmRef = ref(null)
     const scrollRef = ref(null)
     const listRef = ref(null)
+    const addSongRef = ref(null)
     const playList = computed(() => store.state.playList)
     const sequenceList = computed(() => store.state.sequenceList)
     const currentSong = computed(() => store.getters.currentSong)
@@ -138,6 +141,9 @@ export default {
       const el = listRef.value.$el.children[index]
       scrollRef.value.scroll.scrollToElement(el, 300)
     }
+    function showAddSong() {
+      addSongRef.value.show()
+    }
     return {
       removing,
       visible,
@@ -146,6 +152,7 @@ export default {
       // ref
       listRef,
       scrollRef,
+      addSongRef,
       // mode
       modeIcon,
       changeMode,
@@ -162,7 +169,8 @@ export default {
       confirmRef,
       showConfirm,
       // function
-      selectItem
+      selectItem,
+      showAddSong
     }
   }
 

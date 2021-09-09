@@ -1,4 +1,4 @@
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, onActivated, onDeactivated } from 'vue'
 import { useStore } from 'vuex'
 import BScroll from '@better-scroll/core'
 import Slide from '@better-scroll/slide'
@@ -40,6 +40,7 @@ export default function useMiniSlider () {
           })
 
           sliderVal.on('slidePageChanged', ({ pageX }) => {
+            console.log('setCurrentIndex')
             store.commit('setCurrentIndex', pageX)
           })
         } else {
@@ -49,8 +50,14 @@ export default function useMiniSlider () {
       }
     })
     watch(currentIndex, (newIndex) => {
-      if (sliderVal && sliderShow) {
-        sliderVal.goToPage(currentIndex.value, 0, 0)
+      if (sliderVal && sliderShow.value) {
+        sliderVal.goToPage(newIndex, 0, 0)
+      }
+    })
+    watch(playList, async (newList) => {
+      if (sliderVal && sliderShow.value && newList.length) {
+        await nextTick()
+        sliderVal.refresh()
       }
     })
   })
@@ -59,6 +66,14 @@ export default function useMiniSlider () {
     if (slider.value) {
       slider.value.destroy()
     }
+  })
+  onActivated(() => {
+    slider.value.enable()
+    slider.value.refresh()
+  })
+
+  onDeactivated(() => {
+    slider.value.disable()
   })
 
   return { sliderWrapperRef, slider }

@@ -28,7 +28,6 @@ export default {
     })
     const playList = computed(() => store.state.playList)
     watch(playList, async () => {
-      console.log('refresh')
       await nextTick()
       scroll.value.refresh()
     })

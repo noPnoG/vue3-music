@@ -120,6 +120,7 @@ import Scroll from '@/components/base/scroll/scroll'
 import useCd from './use-cd'
 import useMiddleInteractive from './use-middle-interactive'
 import useFavorite from './use-favorite'
+import usePlayHistory from './use-play-history.js'
 import { formatTime } from '@/assets/js/util'
 import MiniPlayer from './mini-player.vue'
 export default {
@@ -163,6 +164,7 @@ export default {
       enter, afterEnter, cdWrapperRef, leave,
       afterLeave
     } = useAnimation()
+    const { savePlay } = usePlayHistory()
     // vuex
     const playMode = computed(() => store.state.playMode)
     const fullScreen = computed(() => store.state.fullScreen)
@@ -187,8 +189,8 @@ export default {
       if (!newSong.id || !newSong.url) {
         return
       }
-      songReady.value = false
       currentTime.value = 0
+      songReady.value = false
       const audioEl = audioRef.value
       audioEl.src = newSong.url
       audioEl.play()
@@ -274,6 +276,7 @@ export default {
       }
       songReady.value = true
       playLyric()
+      savePlay(currentSong.value)
     }
     function error () {
       songReady.value = true
