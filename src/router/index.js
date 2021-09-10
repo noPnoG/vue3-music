@@ -6,6 +6,7 @@ const Singer = () => import('@/views/singer'/* webpackChunkName: "singer" */)
 const SingerDetail = () => import('@/views/singer-detail'/* webpackChunkName: "singer-detail" */)
 const Album = () => import('@/views/album'/* webpackChunkName: "album" */)
 const TopDetail = () => import('@/views/top-detail'/* webpackChunkName: "top-detail" */)
+const UserCenter = () => import('@/views/user-center'/* webpackChunkName: "user-center" */)
 const routes = [
   {
     path: '/',
@@ -46,6 +47,12 @@ const routes = [
       path: ':id',
       component: SingerDetail
     }]
+  },
+  {
+    path: '/user',
+    components: {
+      UserCenter
+    }
   }
 
 ]
